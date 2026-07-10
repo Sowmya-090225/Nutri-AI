@@ -14,16 +14,24 @@ export const LanguageProvider = ({ children }) => {
     localStorage.setItem('languagePreference', language);
   }, [language]);
 
-  const t = (key) => {
-    if (!translations[language] || !translations[language][key]) {
-      // Fallback to English if translation is missing
-      return translations['en'][key] || key;
+  const t = (key, ...args) => {
+    let text = key;
+    if (translations[language] && translations[language][key]) {
+      text = translations[language][key];
+    } else if (translations['en'][key]) {
+      text = translations['en'][key];
     }
-    return translations[language][key];
+
+    if (args.length > 0) {
+      args.forEach(arg => {
+        text = text.replace('%s', arg);
+      });
+    }
+    return text;
   };
 
   const toggleLanguage = () => {
-    const langs = ['en', 'hi', 'te'];
+    const langs = ['en', 'hi', 'te', 'ta', 'fr', 'ur'];
     setLanguage((prev) => langs[(langs.indexOf(prev) + 1) % langs.length]);
   };
 

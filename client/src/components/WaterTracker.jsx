@@ -90,17 +90,17 @@ const WaterTracker = () => {
       </button>
       
       <div style={{ textAlign: 'center', margin: '2rem 0' }}>
-        <h2 style={{ fontSize: '2.5rem', color: '#1abc9c', margin: '0' }}>
+        <h2 style={{ fontSize: '2.5rem', color: 'var(--primary)', margin: '0' }}>
           {waterAmount} / {DAILY_GOAL} {t('ml')}
         </h2>
-        <p style={{ color: '#7f8c8d', fontStyle: 'italic', marginTop: '0.75rem' }}>
+        <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '0.75rem' }}>
           {getFeedbackMessage()}
         </p>
       </div>
 
       <div style={{
         width: '100%',
-        backgroundColor: '#e0e0e0',
+        backgroundColor: 'var(--divider)',
         borderRadius: '10px',
         overflow: 'hidden',
         height: '24px',

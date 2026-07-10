@@ -50,11 +50,17 @@ const ProfileSetup = ({ onLogout }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.put('/profile', profile);
+      // Create a clean payload with only the fields the backend needs
+      const { age, weight, height, gender, goal, dietaryPreference, allergies, avatar } = profile;
+      const payload = { age, weight, height, gender, goal, dietaryPreference, allergies, avatar };
+      
+      await api.put('/profile', payload);
       alert('Profile updated successfully!');
       navigate('/');
     } catch (err) {
-      alert('Failed to update profile');
+      console.error('Submit Error:', err);
+      const msg = err.response?.data?.message || err.message;
+      alert(`Failed to update profile: ${msg}`);
     }
   };
 

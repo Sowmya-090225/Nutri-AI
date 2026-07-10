@@ -62,7 +62,7 @@ const FoodTracker = ({ dailyTarget }) => {
           placeholder={t("e.g. Rice, 2 Eggs, Apple")}
           value={foodName}
           onChange={(e) => setFoodName(e.target.value)}
-          style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: 'var(--radius)', border: '1px solid #ddd', background: 'transparent', color: 'var(--text-main)', outline: 'none' }}
+          style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: 'var(--radius)', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--text-main)', outline: 'none' }}
           disabled={loading}
         />
         <button 
@@ -76,13 +76,13 @@ const FoodTracker = ({ dailyTarget }) => {
         </button>
       </form>
 
-      <div style={{ flex: 1, background: 'var(--background)', borderRadius: 'var(--radius)', padding: '1rem', minHeight: '120px', overflowY: 'auto' }}>
+      <div style={{ flex: 1, minHeight: '120px', overflowY: 'auto', padding: '0.5rem 0' }}>
         {logs.length === 0 ? (
           <p style={{ textAlign: 'center', color: 'var(--text-muted)', margin: '2rem 0' }}>{t('No foods logged yet today.')}</p>
         ) : (
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {logs.map(log => (
-              <li key={log.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 0', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+              <li key={log.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 0', borderBottom: '1px solid var(--divider)' }}>
                 <div>
                   <span style={{ fontWeight: 500, color: 'var(--text-main)' }}>{log.foodName}</span>
                   <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginLeft: '0.5rem' }}>• {log.calories} kcal</span>
@@ -100,7 +100,7 @@ const FoodTracker = ({ dailyTarget }) => {
         )}
       </div>
 
-      <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '2px dashed #eee', paddingTop: '1.5rem' }}>
+      <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '2px dashed var(--divider)', paddingTop: '1.5rem' }}>
         <span style={{ fontWeight: 'bold', fontSize: '1.1rem', color: 'var(--text-main)' }}>{t('Total Intake:')}</span>
         <span style={{ fontWeight: 'bold', fontSize: '1.25rem', color: exceedsTarget ? '#e74c3c' : 'var(--primary)' }}>
           {totalCalories} <span style={{ fontSize: '0.9rem', fontWeight: 'normal', color: 'var(--text-muted)' }}>{t('kcal')}</span> {dailyTarget && `/ ${dailyTarget}`}

@@ -55,8 +55,11 @@ const Navbar = ({ user, onLogout }) => {
             title={t('Select Language')}
           >
             <option value="en" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>English</option>
-            <option value="hi" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>हिंदी</option>
-            <option value="te" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>తెలుగు</option>
+            <option value="hi" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>Hindi</option>
+            <option value="te" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>Telugu</option>
+            <option value="ta" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>Tamil</option>
+            <option value="fr" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>French</option>
+            <option value="ur" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>Urdu</option>
           </select>
           <div style={{ position: 'absolute', right: '10px', pointerEvents: 'none', fontSize: '0.7em' }}>▼</div>
         </div>

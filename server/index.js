@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const sequelize = require('./db');
@@ -9,6 +10,8 @@ const waterRouter = require('./routes/water');
 const foodlogRouter = require('./routes/foodlog');
 const streakRouter = require('./routes/streak');
 const themeRouter = require('./routes/theme');
+const sleepRouter = require('./routes/sleep');
+const moodRouter = require('./routes/mood');
 const User = require('./models/User');
 const Profile = require('./models/Profile');
 const FoodNutrition = require('./models/FoodNutrition');
@@ -16,6 +19,8 @@ const WaterIntake = require('./models/WaterIntake');
 const FoodLog = require('./models/FoodLog');
 const Streak = require('./models/Streak');
 const ThemePreference = require('./models/ThemePreference');
+const SleepLog = require('./models/SleepLog');
+const MoodLog = require('./models/MoodLog');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -41,6 +46,8 @@ app.use('/api/water', waterRouter);
 app.use('/api/foodlog', foodlogRouter);
 app.use('/api/streak', streakRouter);
 app.use('/api/theme', themeRouter);
+app.use('/api/sleep', sleepRouter);
+app.use('/api/mood', moodRouter);
 
 
 // Sync Database and Start Server

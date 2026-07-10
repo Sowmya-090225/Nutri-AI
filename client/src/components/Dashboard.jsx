@@ -4,6 +4,8 @@ import api from '../api';
 import { Activity, Flame, Utensils, Info, Moon, Sun } from 'lucide-react';
 import WaterTracker from './WaterTracker';
 import FoodTracker from './FoodTracker';
+import SleepTracker from './SleepTracker';
+import MoodTracker from './MoodTracker';
 import { useLanguage } from '../context/LanguageContext';
 
 
@@ -121,21 +123,21 @@ const Dashboard = () => {
           <Activity color="var(--primary)" size={32} />
           <h3 style={{ margin: '1rem 0 0.5rem' }}>{t('BMI Status')}</h3>
           <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{bmiData.bmi}</div>
-          <div style={{ color: '#7f8c8d' }}>{bmiData.category}</div>
+          <div style={{ color: 'var(--text-muted)' }}>{bmiData.category}</div>
         </div>
 
         <div className="stat-card">
           <Flame color="#e67e22" size={32} />
           <h3 style={{ margin: '1rem 0 0.5rem' }}>{t('Daily Target')}</h3>
           <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{dietPlan.tdee}</div>
-          <div style={{ color: '#7f8c8d' }}>{t('kcal / day')}</div>
+          <div style={{ color: 'var(--text-muted)' }}>{t('kcal / day')}</div>
         </div>
 
         <div className="stat-card">
           <Utensils color="#3498db" size={32} />
           <h3 style={{ margin: '1rem 0 0.5rem' }}>{t('Plan Intake')}</h3>
           <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{dietPlan.totalCalories}</div>
-          <div style={{ color: '#7f8c8d' }}>{t('kcal planned')}</div>
+          <div style={{ color: 'var(--text-muted)' }}>{t('kcal planned')}</div>
         </div>
       </div>
 
@@ -147,7 +149,7 @@ const Dashboard = () => {
         <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
           {Object.entries(dietPlan.meals).map(([meal, data]) => (
             <div key={meal} className="diet-card" style={{ borderLeft: '4px solid #2ecc71', display: 'flex', flexDirection: 'column', gap: '0.5rem', height: '100%' }}>
-              <h4 style={{ textTransform: 'capitalize', color: '#7f8c8d', margin: 0 }}>{meal}</h4>
+              <h4 style={{ textTransform: 'capitalize', color: 'var(--text-muted)', margin: 0 }}>{meal}</h4>
               <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>{data.name}</div>
               <div style={{ color: '#27ae60', fontSize: '0.9rem', marginTop: 'auto' }}>{data.calories} kcal</div>
             </div>
@@ -158,21 +160,39 @@ const Dashboard = () => {
       <div style={{ marginTop: '3rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
         <FoodTracker dailyTarget={dietPlan?.totalCalories} />
         <WaterTracker />
+        <SleepTracker />
+        <MoodTracker />
       </div>
 
       <div style={{ 
         marginTop: '3rem', 
-        background: isDarkMode ? 'rgba(46, 204, 113, 0.1)' : '#e8f5e9', 
+        background: 'var(--card-bg)', 
         padding: '1.5rem', 
         borderRadius: 'var(--radius)', 
         display: 'flex', 
-        gap: '1rem',
-        border: isDarkMode ? '1px solid rgba(46, 204, 113, 0.2)' : 'none'
+        alignItems: 'center',
+        gap: '1.25rem',
+        border: '1px solid var(--divider)',
+        borderLeft: '5px solid var(--primary)',
+        boxShadow: 'var(--shadow)',
+        transition: 'background-color 0.3s ease, border-color 0.3s ease, transform 0.2s ease'
       }}>
-        <Info color="#27ae60" />
+        <div style={{ 
+          background: 'rgba(46, 204, 113, 0.12)', 
+          borderRadius: '50%', 
+          padding: '0.75rem', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          flexShrink: 0
+        }}>
+          <Info color="var(--primary)" size={24} />
+        </div>
         <div>
-          <h4 style={{ color: '#2c3e50' }}>{t('Health Tip')}</h4>
-          <p style={{ color: '#27ae60', marginTop: '0.25rem' }}>{t('Drinking a glass of water before each meal can help improve digestion and control portions.')}</p>
+          <h4 style={{ color: 'var(--text-main)', margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>{t('Health Tip')}</h4>
+          <p style={{ color: 'var(--text-main)', marginTop: '0.4rem', fontSize: '0.95rem', lineHeight: '1.45' }}>
+            {t('Drinking a glass of water before each meal can help improve digestion and control portions.')}
+          </p>
         </div>
       </div>
     </div>

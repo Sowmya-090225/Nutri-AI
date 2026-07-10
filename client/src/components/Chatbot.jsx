@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Apple, Activity, Info, Mic, MicOff, Flame } from 'lucide-react';
+import { Send, Bot, User, Apple, Activity, Info, Mic, MicOff, Flame, Moon } from 'lucide-react';
 import api from '../api';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -23,13 +23,18 @@ function extractCalorieQuery(text) {
 }
 
 // ── Response builder ─────────────────────────────────────────────────────────
-function buildCalorieResponse(data, rawQuery) {
+function buildCalorieResponse(data, rawQuery, t) {
   const name = data.food ? data.food.charAt(0).toUpperCase() + data.food.slice(1) : rawQuery;
   const qty  = data.quantity > 1 ? `${data.quantity} serving(s) of ` : '';
-  let msg = `🔥 ${qty}**${name}** contains approximately **${data.calories} kcal**.`;
-  msg += `\n📏 Serving reference: ${data.serving}`;
-  if (data.protein) msg += `\n🥩 Protein: ${data.protein}g  |  🍞 Carbs: ${data.carbs}g  |  🫒 Fats: ${data.fats}g`;
-  msg += `\n${data.tag}`;
+  
+  let msg = t("🔥 %s**%s** contains approximately **%s kcal**.", qty, name, data.calories);
+  msg += t("\n📏 Serving reference: %s", data.serving);
+  
+  if (data.protein) {
+    msg += t("\n🥩 Protein: %sg  |  🍞 Carbs: %sg  |  🫒 Fats: %sg", data.protein, data.carbs, data.fats);
+  }
+  
+  if (data.tag) msg += `\n${data.tag}`;
   return msg;
 }
 
@@ -84,12 +89,12 @@ const Chatbot = () => {
   const lookupCalories = async (query) => {
     try {
       const res = await api.get(`/nutrition/calories?query=${encodeURIComponent(query)}`);
-      return buildCalorieResponse(res.data, query);
+      return buildCalorieResponse(res.data, query, t);
     } catch (e) {
       if (e.response?.status === 404) {
-        return `😕 I couldn't find calorie data for "${query}". Try a more common food name, or upload your nutrition dataset via the Upload page!`;
+        return t("😕 I couldn't find calorie data for \"%s\". Try a more common food name, or upload your nutrition dataset via the Upload page!", query);
       }
-      return `⚠️ Trouble fetching calorie data right now. Please try again shortly.`;
+      return t("⚠️ Trouble fetching calorie data right now. Please try again shortly.");
     }
   };
 
@@ -113,73 +118,125 @@ const Chatbot = () => {
     setTimeout(async () => {
       const lowerText = text.toLowerCase();
 
-      // 2. Calorie pattern detection
+      // 1. Calorie pattern detection
       const calorieQuery = extractCalorieQuery(text);
       if (calorieQuery) {
         pushBot(await lookupCalories(calorieQuery));
         return;
       }
 
-      // 3. Existing: Diet plan
-      if (lowerText.includes('diet') || lowerText.includes('today')) {
-        try {
-          const res = await api.get('/diet/plan');
-          pushBot(`Your diet for today:\n🌅 Breakfast: ${res.data.meals.breakfast.name}\n☀️ Lunch: ${res.data.meals.lunch.name}\n🌙 Dinner: ${res.data.meals.dinner.name}\n\nTotal: ${res.data.totalCalories} kcal.`);
-        } catch {
-          pushBot('Please complete your profile so I can generate a diet plan for you!');
-        }
-        return;
-      }
-
-      // 4. Existing: BMI
+      // 2. BMI
       if (lowerText.includes('bmi')) {
         try {
           const res = await api.get('/diet/bmi');
-          pushBot(`Your current BMI is ${res.data.bmi}, which falls in the '${res.data.category}' category.`);
+          pushBot(t("Your current BMI is %s, which falls in the '%s' category.", res.data.bmi, t(res.data.category)));
         } catch {
-          pushBot('I need your weight and height to calculate BMI. Please update your profile.');
+          pushBot(t('I need your weight and height to calculate BMI. Please update your profile.'));
         }
         return;
       }
 
-      // 5. Existing: Tips
-      if (lowerText.includes('tip') || lowerText.includes('healthy')) {
-        const tips = [
-          'Swap sugary drinks for sparkling water with a splash of lime.',
-          'Try to fill half your plate with vegetables at every meal.',
-          'Use small plates to help with portion control.',
-          "Prioritize sleep; it's as important for health as diet and exercise!"
-        ];
-        pushBot(tips[Math.floor(Math.random() * tips.length)]);
-        return;
-      }
-
-      // 6. Existing: Water
+      // 3. Water
       if (lowerText.includes('water') || lowerText.includes('drink') || lowerText.includes('drank')) {
         try {
           const res = await api.get('/water');
           const amount = res.data.amount || 0;
-          pushBot(`You have logged ${amount} ml of water today. Your daily goal is 2500 ml. Keep hydrating! 💧`);
+          pushBot(t("You have logged %s ml of water today. Your daily goal is 2500 ml. Keep hydrating! 💧", amount));
         } catch {
-          pushBot("I couldn't fetch your water intake right now. Please try again later.");
+          pushBot(t("I couldn't fetch your water intake right now. Please try again later."));
         }
         return;
       }
 
-      // 7. Existing: General nutrition DB search (fallback)
+      // 4. Sleep (Critical Priority)
+      const sleepKeywords = ['sleep', 'slept', 'தூக்கம்', 'தூங்கிய', 'నిద్ర', 'నిద్రపోయారు', 'नींद', 'सोया'];
+      const isSleepQuery = sleepKeywords.some(kw => lowerText.includes(kw.toLowerCase())) || 
+                           lowerText.includes(t("How was my sleep today?").toLowerCase()) ||
+                           lowerText.includes(t("Sleep Status").toLowerCase());
+
+      if (isSleepQuery) {
+        try {
+          const res = await api.get('/sleep');
+          const hrs = res.data.hours || 0;
+          let baseMsg = t("Today's Sleep: %s hours", hrs);
+          
+          if (hrs === 0) {
+            baseMsg = t("No sleep logged yet for today.");
+          } else if (hrs < 6) {
+            baseMsg += `\n${t("⚠️ Poor sleep. Try to rest more.")}`;
+          } else if (hrs <= 8) {
+            baseMsg += `\n${t("👍 Good sleep. Keep it up!")}`;
+          } else {
+            baseMsg += `\n${t("😴 Great rest, but maintain balance.")}`;
+          }
+
+          const sleepTips = [
+            "Consistency is key! Try to go to bed and wake up at the same time every day.",
+            "Avoid caffeine and heavy meals close to bedtime for better sleep quality.",
+            "Create a dark, quiet, and cool environment in your bedroom.",
+            "Put away electronic devices at least 30 minutes before you plan to sleep."
+          ];
+          baseMsg += `\n\n💡 ${t(sleepTips[Math.floor(Math.random() * sleepTips.length)])}`;
+          
+          pushBot(baseMsg);
+        } catch (err) {
+          console.error('Chatbot sleep fetch error:', err);
+          pushBot(t("I couldn't fetch your sleep data right now. Please try again later."));
+        }
+        return;
+      }
+
+      // 5. Diet Plan (Refined to avoid capturing status queries)
+      const dietKeywords = ['diet', 'meal', 'plan', 'eat', 'food', 'breakfast', 'lunch', 'dinner'];
+      const isDietQuery = dietKeywords.some(kw => lowerText.includes(kw.toLowerCase()));
+      
+      if (isDietQuery || (lowerText.includes('today') && !isSleepQuery)) {
+        try {
+          const res = await api.get('/diet/plan');
+          pushBot(t("Your diet for today:\n🌅 Breakfast: %s\n☀️ Lunch: %s\n🌙 Dinner: %s\n\nTotal: %s kcal.", 
+            res.data.meals.breakfast.name, res.data.meals.lunch.name, res.data.meals.dinner.name, res.data.totalCalories));
+        } catch {
+          pushBot(t('Please complete your profile so I can generate a diet plan for you!'));
+        }
+        return;
+      }
+
+      // 6. Healthy Tips
+      if (lowerText.includes('tip') || lowerText.includes('healthy')) {
+        const tips = [
+          '💧 Hydration Hack: Drink a glass of water right when you wake up to kickstart your metabolism!',
+          '🥗 Color Your Plate: Try to include at least 3 different colors of vegetables in your main meals.',
+          '🚶‍♀️ Micro-Workouts: Do 10 squats or stretches every time you get up for a glass of water.',
+          '🧘 Mindful Munching: Put your fork down between bites. It takes 20 minutes for your brain to realize you are full!',
+          '💤 Sleep = Success: Aim for 7-8 hours of sleep. Poor sleep directly increases cravings for sugary snacks.',
+          '🥑 Fat is Fuel: Don\'t fear healthy fats! Avocados, nuts, and olive oil keep you fuller for much longer.',
+          '☕ Caffeine Curfew: Try to cut off coffee and energy drinks by 2 PM for a deeper, more restorative sleep tonight.',
+          '💪 Protein Power: Start your morning with at least 20g of protein to stabilize your energy and focus all day.',
+          '🌞 Sunshine Vitamin: Get 15 minutes of direct sunlight every morning to regulate your circadian rhythm and boost your mood!',
+          '📱 Screen Detox: Stop looking at screens 45 minutes before bed. Your sleep quality will dramatically improve!',
+          '🥤 Sneaky Calories: Swap out one sugary drink a day for sparkling water with a squeeze of fresh lemon or lime.',
+          '🧠 Brain Food: Incorporate Omega-3 rich foods like walnuts or salmon into your weekly meals to boost cognitive function.'
+        ];
+        pushBot(t(tips[Math.floor(Math.random() * tips.length)]));
+        return;
+      }
+
+      // 7. General nutrition DB search (fallback)
       try {
         const res = await api.get(`/nutrition/search?query=${encodeURIComponent(text)}`);
         const data = res.data;
-        let response = `${data.quantity} unit(s) of ${data.name} contains approximately ${data.calories} kcal, ${data.protein}g protein, ${data.carbs}g carbs, and ${data.fats}g fats (Serving: ${data.servingSize}).`;
+        let response = t("%s unit(s) of %s contains approximately %s kcal, %s protein, %s carbs, and %s fats (Serving: %s).", 
+          data.quantity, data.name, data.calories, data.protein, data.carbs, data.fats, data.servingSize);
+        
         if (data.name.includes('fry') || data.name.includes('burger')) {
-          response += ' Pro-tip: Try a grilled or steamed version for fewer calories!';
+          response += t(" Pro-tip: Try a grilled or steamed version for fewer calories!");
         }
         pushBot(response);
       } catch (e) {
         if (e.response?.status === 404) {
-          pushBot("I'm here to help with your nutrition! Ask about today's diet, BMI, calorie counts (e.g. 'calories in rice'), or a specific food.");
+          pushBot(t("I'm here to help with your nutrition! Ask about today's diet, BMI, calorie counts (e.g. 'calories in rice'), or a specific food."));
         } else {
-          pushBot("I'm having trouble right now. Please try again or ask about your BMI/diet plan.");
+          pushBot(t("I'm having trouble right now. Please try again or ask about your BMI/diet plan."));
         }
       }
     }, 400);
@@ -253,6 +310,7 @@ const Chatbot = () => {
         <div className="chat-quick-bar">
           <QuickButton icon={Apple}   label={t("Today's diet")}   onClick={() => handleSend("Show today's diet")} />
           <QuickButton icon={Activity} label={t("My BMI")}        onClick={() => handleSend("What is my BMI?")} />
+          <QuickButton icon={Moon}     label={t("Sleep Status")}   onClick={() => handleSend(t("How was my sleep today?"))} />
           <QuickButton icon={Info}    label={t("Healthy tip")}    onClick={() => handleSend("Give me a healthy tip")} />
           <QuickButton icon={Flame}   label={t("Check calories")} onClick={triggerCalorieMode} />
         </div>

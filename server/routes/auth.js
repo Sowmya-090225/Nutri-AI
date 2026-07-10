@@ -7,21 +7,12 @@ const Streak = require('../models/Streak');
 const ThemePreference = require('../models/ThemePreference');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { OAuth2Client } = require('google-auth-library');
 const router = express.Router();
 
-const JWT_SECRET = 'your-very-secret-key-change-it'; // In production, use env variables
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'dummy-client-id');
 
-// Middleware to authenticate JWT (Shared logic)
-const authenticate = (req, res, next) => {
-  const token = req.headers['authorization'];
-  if (!token) return res.status(401).json({ message: 'No token provided' });
-
-  jwt.verify(token.split(' ')[1], JWT_SECRET, (err, decoded) => {
-    if (err) return res.status(401).json({ message: 'Unauthorized' });
-    req.userId = decoded.id;
-    next();
-  });
-};
+const { JWT_SECRET, authenticate } = require('../config');
 
 // Register
 router.post('/register', async (req, res) => {
@@ -55,13 +46,59 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ where: { email } });
     if (!user) return res.status(404).json({ message: 'User not found' });
 
+    // Ensure user has a password (they might be a Google user)
+    if (!user.password) return res.status(400).json({ message: 'Please login with Google' });
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
     const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1d' });
-    res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
+    res.json({ token, user: { id: user.id, email: user.email, name: user.name, profilePicture: user.profilePicture } });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+// Google Auth
+router.post('/google', async (req, res) => {
+  try {
+    const { token } = req.body;
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID || 'dummy-client-id',
+    });
+    const payload = ticket.getPayload();
+    const { email, name, sub, picture } = payload;
+
+    let user = await User.findOne({ where: { email } });
+
+    if (user) {
+      // User exists, update googleId and profilePicture if missing
+      if (!user.googleId) {
+        user.googleId = sub;
+        user.authProvider = 'google';
+        user.profilePicture = picture || user.profilePicture;
+        await user.save();
+      }
+    } else {
+      // User doesn't exist, create
+      user = await User.create({
+        email,
+        name,
+        authProvider: 'google',
+        googleId: sub,
+        profilePicture: picture,
+        password: null // No password for Google users
+      });
+      // Create empty profile
+      await Profile.create({ userId: user.id });
+    }
+
+    const appToken = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1d' });
+    res.json({ token: appToken, user: { id: user.id, email: user.email, name: user.name, profilePicture: user.profilePicture } });
+  } catch (err) {
+    console.error('Google Auth Error:', err);
+    res.status(400).json({ message: 'Invalid Google Token' });
   }
 });
 

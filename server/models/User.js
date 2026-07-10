@@ -17,11 +17,23 @@ const User = sequelize.define('User', {
   },
   password: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true // changed for google auth
   },
   name: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  authProvider: {
+    type: DataTypes.STRING,
+    defaultValue: 'local'
+  },
+  googleId: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  profilePicture: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 });
 

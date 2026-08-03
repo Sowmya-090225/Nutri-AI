@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const { verifyConnection } = require('./emailService');
 const cors = require('cors');
 const sequelize = require('./db');
 const { router: authRouter } = require('./routes/auth');
@@ -55,6 +56,8 @@ sequelize.sync().then(() => {
   console.log('Database synced');
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+    // Verify email service credentials on startup
+    verifyConnection();
   });
 }).catch(err => {
   console.error('Failed to sync database:', err);

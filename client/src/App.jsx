@@ -8,6 +8,7 @@ import Navbar from './components/Navbar';
 import BMICalculator from './components/BMICalculator';
 import NutritionUpload from './components/NutritionUpload';
 import InteractiveBackground from './components/InteractiveBackground';
+import FitnessDashboard from './components/fitness/FitnessDashboard';
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -81,6 +82,7 @@ function App() {
         <Routes>
           <Route path="/auth" element={!token ? <Auth onLogin={handleLogin} /> : <Navigate to="/" />} />
           <Route path="/" element={token ? <Dashboard /> : <Navigate to="/auth" />} />
+          <Route path="/fitness" element={token ? <FitnessDashboard /> : <Navigate to="/auth" />} />
           <Route path="/profile" element={token ? <ProfileSetup onLogout={handleLogout} /> : <Navigate to="/auth" />} />
           <Route path="/chat" element={token ? <Chatbot /> : <Navigate to="/auth" />} />
           <Route path="/bmi" element={<BMICalculator />} />

@@ -3,6 +3,8 @@ import api from '../api';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Trash2, User, Palette, Layers } from 'lucide-react';
 import ThemeSettings from './ThemeSettings';
+import HeightPicker from './HeightPicker';
+import WeightPicker from './WeightPicker';
 import { useLanguage } from '../context/LanguageContext';
 
 const AVATAR_OPTIONS = [
@@ -20,7 +22,8 @@ const ProfileSetup = ({ onLogout }) => {
   const { t } = useLanguage();
   const [profile, setProfile] = useState({
     age: '', weight: '', height: '', gender: 'male',
-    goal: 'maintenance', dietaryPreference: 'veg', allergies: '', avatar: null
+    goal: 'maintenance', dietaryPreference: 'veg', allergies: '', avatar: null,
+    activityLevel: 'sedentary', fitnessExperience: 'beginner', targetWeight: '', exerciseRestrictions: ''
   });
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -35,7 +38,11 @@ const ProfileSetup = ({ onLogout }) => {
         if (res.data) {
           setProfile({
             ...res.data,
-            dietaryPreference: res.data.dietaryPreference || 'veg'
+            dietaryPreference: res.data.dietaryPreference || 'veg',
+            activityLevel: res.data.activityLevel || 'sedentary',
+            fitnessExperience: res.data.fitnessExperience || 'beginner',
+            targetWeight: res.data.targetWeight ?? '',
+            exerciseRestrictions: res.data.exerciseRestrictions || ''
           });
         }
       } catch (err) {
@@ -51,8 +58,16 @@ const ProfileSetup = ({ onLogout }) => {
     e.preventDefault();
     try {
       // Create a clean payload with only the fields the backend needs
-      const { age, weight, height, gender, goal, dietaryPreference, allergies, avatar } = profile;
-      const payload = { age, weight, height, gender, goal, dietaryPreference, allergies, avatar };
+      const {
+        age, weight, height, gender, goal, dietaryPreference, allergies, avatar,
+        activityLevel, fitnessExperience, targetWeight, exerciseRestrictions
+      } = profile;
+      const payload = {
+        age, weight, height, gender, goal, dietaryPreference, allergies, avatar,
+        activityLevel, fitnessExperience,
+        targetWeight: targetWeight ? parseFloat(targetWeight) : null,
+        exerciseRestrictions
+      };
       
       await api.put('/profile', payload);
       alert('Profile updated successfully!');
@@ -262,22 +277,18 @@ const ProfileSetup = ({ onLogout }) => {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div className="input-group">
-              <label>{t('Weight (kg)')}</label>
-              <input
-                type="number" step="0.1"
-                value={profile.weight ?? ''}
-                onChange={e => setProfile({ ...profile, weight: e.target.value })}
-                required
+            <div className="input-group" style={{ display: 'flex', flexDirection: 'column' }}>
+              <WeightPicker
+                value={profile.weight}
+                onChange={(v) => setProfile({ ...profile, weight: v })}
+                t={t}
               />
             </div>
-            <div className="input-group">
-              <label>{t('Height (cm)')}</label>
-              <input
-                type="number" step="0.1"
-                value={profile.height ?? ''}
-                onChange={e => setProfile({ ...profile, height: e.target.value })}
-                required
+            <div className="input-group" style={{ display: 'flex', flexDirection: 'column' }}>
+              <HeightPicker
+                value={profile.height}
+                onChange={(v) => setProfile({ ...profile, height: v })}
+                t={t}
               />
             </div>
           </div>
@@ -308,6 +319,57 @@ const ProfileSetup = ({ onLogout }) => {
               value={profile.allergies ?? ''}
               onChange={e => setProfile({ ...profile, allergies: e.target.value })}
             />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="input-group">
+              <label>{t('Activity Level')}</label>
+              <select
+                value={profile.activityLevel || 'sedentary'}
+                onChange={e => setProfile({ ...profile, activityLevel: e.target.value })}
+              >
+                <option value="sedentary">{t('Sedentary (Little/no exercise)')}</option>
+                <option value="light">{t('Light (1-3 days/week)')}</option>
+                <option value="moderate">{t('Moderate (3-5 days/week)')}</option>
+                <option value="active">{t('Active (6-7 days/week)')}</option>
+                <option value="very_active">{t('Very Active (Intense daily/physical job)')}</option>
+              </select>
+            </div>
+
+            <div className="input-group">
+              <label>{t('Fitness Experience')}</label>
+              <select
+                value={profile.fitnessExperience || 'beginner'}
+                onChange={e => setProfile({ ...profile, fitnessExperience: e.target.value })}
+              >
+                <option value="beginner">{t('Beginner (0-6 months)')}</option>
+                <option value="intermediate">{t('Intermediate (6-24 months)')}</option>
+                <option value="advanced">{t('Advanced (2+ years)')}</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="input-group">
+              <label>{t('Target Weight (kg, optional)')}</label>
+              <input
+                type="number"
+                step="0.1"
+                placeholder={t("e.g. 68")}
+                value={profile.targetWeight ?? ''}
+                onChange={e => setProfile({ ...profile, targetWeight: e.target.value })}
+              />
+            </div>
+
+            <div className="input-group">
+              <label>{t('Exercise Restrictions (optional)')}</label>
+              <input
+                type="text"
+                placeholder={t("e.g. knee pain, lower back, no jumping")}
+                value={profile.exerciseRestrictions ?? ''}
+                onChange={e => setProfile({ ...profile, exerciseRestrictions: e.target.value })}
+              />
+            </div>
           </div>
 
           <button type="submit" className="btn btn-primary" style={{ marginBottom: '1rem' }}>{t('Save Profile')}</button>

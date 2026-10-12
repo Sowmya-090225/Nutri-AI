@@ -13,6 +13,7 @@ const streakRouter = require('./routes/streak');
 const themeRouter = require('./routes/theme');
 const sleepRouter = require('./routes/sleep');
 const moodRouter = require('./routes/mood');
+const fitnessRouter = require('./routes/fitness');
 const User = require('./models/User');
 const Profile = require('./models/Profile');
 const FoodNutrition = require('./models/FoodNutrition');
@@ -22,6 +23,10 @@ const Streak = require('./models/Streak');
 const ThemePreference = require('./models/ThemePreference');
 const SleepLog = require('./models/SleepLog');
 const MoodLog = require('./models/MoodLog');
+const WorkoutPlan = require('./models/WorkoutPlan');
+const WorkoutSession = require('./models/WorkoutSession');
+const ExerciseLog = require('./models/ExerciseLog');
+const WeightLog = require('./models/WeightLog');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -49,6 +54,7 @@ app.use('/api/streak', streakRouter);
 app.use('/api/theme', themeRouter);
 app.use('/api/sleep', sleepRouter);
 app.use('/api/mood', moodRouter);
+app.use('/api/fitness', fitnessRouter);
 
 
 // Sync Database and Start Server

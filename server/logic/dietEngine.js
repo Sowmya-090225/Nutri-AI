@@ -53,18 +53,35 @@ const calculateBMI = (weight, height) => {
 };
 
 const calculateCalories = (profile) => {
-  const { age, weight, height, gender, goal } = profile;
+  const { age, weight, height, gender, goal, activityLevel } = profile;
+  
+  // Mifflin–St Jeor Equation
   let bmr;
   if (gender === 'male') {
-    bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+    bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+  } else if (gender === 'female') {
+    bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
   } else {
-    bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+    // For 'other' or unspecified, use average of male and female formulas
+    const maleBmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+    const femaleBmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+    bmr = (maleBmr + femaleBmr) / 2;
   }
 
-  let tdee = bmr * 1.2; // Sedentary
+  // Activity level multipliers
+  const activityMultipliers = {
+    sedentary: 1.2,
+    light: 1.375,
+    moderate: 1.55,
+    active: 1.725,
+    very_active: 1.9
+  };
 
-  if (goal === 'weight_loss') tdee -= 500;
-  else if (goal === 'weight_gain') tdee += 500;
+  const multiplier = activityMultipliers[activityLevel] || 1.2; // default to sedentary
+  let tdee = bmr * multiplier;
+
+  if (goal === 'weight_loss') tdee -= 400;
+  else if (goal === 'weight_gain') tdee += 400;
 
   return Math.round(tdee);
 };

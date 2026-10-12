@@ -17,7 +17,7 @@ router.get('/', authenticate, async (req, res) => {
 // Update Profile
 router.put('/', authenticate, async (req, res) => {
   try {
-    const { age, weight, height, gender, goal, dietaryPreference, allergies, avatar } = req.body;
+    const { age, weight, height, gender, goal, dietaryPreference, allergies, avatar, activityLevel, fitnessExperience, targetWeight, exerciseRestrictions } = req.body;
     
     // Sanitize numeric fields - handle empty strings, undefined, null
     const parseNum = (val, parser) => {
@@ -29,11 +29,14 @@ router.put('/', authenticate, async (req, res) => {
     const sanitizedAge = parseNum(age, parseInt);
     const sanitizedWeight = parseNum(weight, parseFloat);
     const sanitizedHeight = parseNum(height, parseFloat);
+    const sanitizedTargetWeight = parseNum(targetWeight, parseFloat);
 
     // Sanitize enums to lowercase if provided
     const sanitizedGender = gender?.toLowerCase();
     const sanitizedGoal = goal?.toLowerCase();
     const sanitizedDietaryPreference = dietaryPreference?.toLowerCase();
+    const sanitizedActivityLevel = activityLevel?.toLowerCase();
+    const sanitizedFitnessExperience = fitnessExperience?.toLowerCase();
 
     let profile = await Profile.findOne({ where: { userId: req.userId } });
 
@@ -45,7 +48,11 @@ router.put('/', authenticate, async (req, res) => {
       goal: sanitizedGoal, 
       dietaryPreference: sanitizedDietaryPreference, 
       allergies,
-      avatar
+      avatar,
+      activityLevel: sanitizedActivityLevel,
+      fitnessExperience: sanitizedFitnessExperience,
+      targetWeight: sanitizedTargetWeight,
+      exerciseRestrictions
     };
 
     if (!profile) {

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Apple, LayoutDashboard, User, MessageSquare, LogOut, Activity, Upload, Globe, Settings as SettingsIcon } from 'lucide-react';
+import { Apple, LayoutDashboard, Dumbbell, User, MessageSquare, LogOut, Activity, Upload, Globe, Settings as SettingsIcon } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 const Navbar = ({ user, onLogout }) => {
@@ -37,6 +37,7 @@ const Navbar = ({ user, onLogout }) => {
       </div>
       <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
         <Link to="/" className="nav-link"><LayoutDashboard size={20} title={t('Dashboard')} /></Link>
+        <Link to="/fitness" className="nav-link"><Dumbbell size={20} title={t('Fitness')} /></Link>
         <Link to="/chat" className="nav-link"><MessageSquare size={20} title={t('Chatbot')} /></Link>
         <Link to="/bmi" className="nav-link"><Activity size={20} title={t('BMI Calculator')} /></Link>
         <Link to="/nutrition" className="nav-link"><Upload size={20} title={t('Upload Data')} /></Link>
